@@ -9,6 +9,8 @@ $app->get('/', function() use ( $app ) {
 
 $app->get('/tasks', function() use ( $app ) {
     $tasks = getTasks();
+    //define what kind is this response
+    //$app->response()->header('Content-Type','application/json');
     echo json_encode($tasks);
 });
 
