@@ -10,8 +10,21 @@ $app->get('/', function() use ( $app ) {
 $app->get('/tasks', function() use ( $app ) {
     $tasks = getTasks();
     //define what kind is this response
-    //$app->response()->header('Content-Type','application/json');
+    $app->response()->header('Content-Type','application/json');
     echo json_encode($tasks);
+});
+
+$app->get('/tasks/:id',function($id) use ($app){
+   $tasks = getTasks();
+   $index = array_search($id, array_column($tasks, 'id'));
+   if($index > -1){
+      $app->response()->header('Content-Type','application/json');
+      echo json_encode($tasks[$index]); 
+   }else{
+       $app->response()->setStatus(404);
+       echo "Not Found";
+   }
+   
 });
 
 function getTasks(){
