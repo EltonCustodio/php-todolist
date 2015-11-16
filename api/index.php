@@ -1,58 +1,113 @@
 <?php
 require 'vendor/autoload.php';
-
 $app = new \Slim\Slim();
-
+// http://hostname/api/
 $app->get('/', function() use ( $app ) {
-    echo "Welcome to REST API";
+    echo "Welcome to Task REST API";
 });
-
-//Get all tasks
+/*
+HTTP GET http://domain/api/tasks
+RESPONSE 200 OK
+[
+  {
+    "id": 1,
+    "description": "Learn REST",
+    "done": false
+  },
+  {
+    "id": 2,
+    "description": "Learn JavaScript",
+    "done": false
+  },
+  {
+    "id": 3,
+    "description": "Learn English",
+    "done": false
+  }
+]
+*/
 $app->get('/tasks', function() use ( $app ) {
     $tasks = getTasks();
-    //define what kind is this response
+    //Define what kind is this response
     $app->response()->header('Content-Type','application/json');
     echo json_encode($tasks);
 });
-
-
-//Get tasks by id
-$app->get('/tasks/:id',function($id) use ($app){
-   $tasks = getTasks();
-   $index = array_search($id, array_column($tasks, 'id'));
-   if($index > -1){
-      $app->response()->header('Content-Type','application/json');
-      echo json_encode($tasks[$index]); 
-   }else{
-       $app->response()->setStatus(404);
-       echo "Not Found";
-   }
-   
+/*
+HTTP GET http://domain/api/tasks/1
+RESPONSE 200 OK
+{
+  "id": 1,
+  "description": "Learn REST",
+  "done": false
+}
+RESPONSE 204 NO CONTENT
+*/
+$app->get('/tasks/:id', function($id) use ( $app ) {
+    $tasks = getTasks();
+    $index = array_search($id, array_column($tasks, 'id'));
+    
+    if($index > -1) {
+        $app->response()->header('Content-Type', 'application/json');
+        echo json_encode($tasks[$index]);
+    }
+    else {
+        $app->response()->setStatus(204);
+    }
 });
-
-
-
-$app->post('/tasks', function()use ($app){
-    $tasksJson =  $app->request()->getBody();
-    $tasks = json_decode($tasksJson);
-    if($tasks){
-        echo "{$tasks->description} added";
-    }else{
+/*
+HTTP POST http://domain/api/tasks
+REQUEST Body
+{
+  "description": "Learn REST",
+}
+RESPONSE 200 OK Body
+Learn REST added
+*/
+$app->post('/tasks', function() use ( $app ) {
+    $taskJson = $app->request()->getBody();
+    $task = json_decode($taskJson);
+    if($task) {
+        echo "{$task->description} added";
+    }
+    else {
         $app->response()->setStatus(400);
         echo "Malformat JSON";
     }
 });
-
-
-    
-function getTasks(){
-     $tasks = array(
-        array('id'=>1,'description'=>'Learn Rest','done'=>false),
+/*
+HTTP PUT http://domain/api/tasks/1
+REQUEST Body
+{
+  "id": 1,
+  "description": "Learn REST",
+  "done": false
+}
+RESPONSE 200 OK
+{
+  "id": 1,
+  "description": "Learn REST",
+  "done": false
+}
+*/
+$app->put('/tasks/:id', function($id) use ( $app ) {
+    echo $app->request()->getBody();
+});
+/*
+HTTP DELETE http://domain/api/tasks/1
+RESPONSE 200 OK
+Task deleted
+*/
+$app->delete('/tasks/:id', function($id) use ( $app ) {
+    echo $id;
+});
+//TODO move it to a DAO class
+function getTasks() {
+    $tasks = array (
+        array('id'=>1,'description'=>'Learn REST','done'=>false),
         array('id'=>2,'description'=>'Learn JavaScript','done'=>false),
         array('id'=>3,'description'=>'Learn English','done'=>false)
     );
     return $tasks;
 }
-
 $app->run();
 ?>
